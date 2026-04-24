@@ -1,0 +1,44 @@
+{
+  "subjects": [
+    {
+      "id": "mobue379kgtok",
+      "name": "javascript",
+      "color": "#6366f1",
+      "createdAt": "2026-04-23T18:55:59.925Z"
+    },
+    {
+      "id": "mobug1hoeubr6",
+      "name": "machine learning",
+      "color": "#ec4899",
+      "createdAt": "2026-04-23T18:57:31.020Z"
+    },
+    {
+      "id": "mobuhn8dynnk2",
+      "name": "data science",
+      "color": "#f59e0b",
+      "createdAt": "2026-04-23T18:58:45.853Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "mobuh4nf8jyhw",
+      "title": "lab 3",
+      "subjectId": "mobug1hoeubr6",
+      "deadline": "2026-04-30",
+      "priority": "high",
+      "notes": "kena guna saas viyaa",
+      "completed": true,
+      "createdAt": "2026-04-23T18:58:21.771Z"
+    },
+    {
+      "id": "mobui5aqatm0e",
+      "title": "lab 5",
+      "subjectId": "mobuhn8dynnk2",
+      "deadline": "2026-04-25",
+      "priority": "medium",
+      "notes": "kena siapkan pwer bi",
+      "completed": false,
+      "createdAt": "2026-04-23T18:59:09.266Z"
+    }
+  ]
+}

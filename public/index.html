@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Study Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── Sidebar ─────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">
+        <span class="logo-icon">✦</span>
+        <span class="logo-text">StudyPlan</span>
+      </div>
+
+      <!-- Overall Progress -->
+      <div class="overall-progress card">
+        <p class="card-label">Overall Progress</p>
+        <div class="big-percent" id="overallPercent">0%</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="overallBar" style="width:0%"></div>
+        </div>
+        <p class="progress-sub" id="overallSub">0 / 0 tasks done</p>
+      </div>
+
+      <!-- Subject List -->
+      <div class="section-header">
+        <span>Subjects</span>
+        <button class="icon-btn" id="openSubjectModal" title="Add subject">＋</button>
+      </div>
+      <ul class="subject-list" id="subjectList"></ul>
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost full-width" id="showAll">Show All Tasks</button>
+    </div>
+  </aside>
+
+  <!-- ── Main ────────────────────────────────── -->
+  <main class="main">
+    <header class="top-bar">
+      <div>
+        <h1 class="page-title" id="pageTitle">All Tasks</h1>
+        <p class="page-sub" id="pageSub">Track everything you need to study</p>
+      </div>
+      <button class="btn btn-primary" id="openTaskModal">＋ Add Task</button>
+    </header>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+      <button class="filter-btn" data-filter="high">🔴 High</button>
+      <button class="filter-btn" data-filter="medium">🟡 Medium</button>
+      <button class="filter-btn" data-filter="low">🟢 Low</button>
+    </div>
+
+    <!-- Task Grid -->
+    <div class="task-grid" id="taskGrid">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📚</div>
+        <p>No tasks yet. Add a subject first, then create tasks!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Modal: Add Subject ──────────────────── -->
+  <div class="modal-overlay hidden" id="subjectModal">
+    <div class="modal">
+      <button class="modal-close" data-close="subjectModal">✕</button>
+      <h2 class="modal-title">New Subject</h2>
+      <label class="form-label">Subject Name</label>
+      <input class="form-input" id="subjectName" type="text" placeholder="e.g. Mathematics" maxlength="40" />
+      <label class="form-label">Color Tag</label>
+      <div class="color-picker" id="colorPicker">
+        <span class="color-dot selected" data-color="#6366f1" style="background:#6366f1"></span>
+        <span class="color-dot" data-color="#ec4899" style="background:#ec4899"></span>
+        <span class="color-dot" data-color="#f59e0b" style="background:#f59e0b"></span>
+        <span class="color-dot" data-color="#10b981" style="background:#10b981"></span>
+        <span class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></span>
+        <span class="color-dot" data-color="#ef4444" style="background:#ef4444"></span>
+        <span class="color-dot" data-color="#8b5cf6" style="background:#8b5cf6"></span>
+        <span class="color-dot" data-color="#14b8a6" style="background:#14b8a6"></span>
+      </div>
+      <button class="btn btn-primary full-width mt" id="saveSubject">Save Subject</button>
+    </div>
+  </div>
+
+  <!-- ── Modal: Add Task ─────────────────────── -->
+  <div class="modal-overlay hidden" id="taskModal">
+    <div class="modal">
+      <button class="modal-close" data-close="taskModal">✕</button>
+      <h2 class="modal-title">New Task</h2>
+
+      <label class="form-label">Task Title</label>
+      <input class="form-input" id="taskTitle" type="text" placeholder="e.g. Chapter 3 Review" maxlength="80" />
+
+      <label class="form-label">Subject</label>
+      <select class="form-input" id="taskSubject"></select>
+
+      <div class="form-row">
+        <div>
+          <label class="form-label">Deadline</label>
+          <input class="form-input" id="taskDeadline" type="date" />
+        </div>
+        <div>
+          <label class="form-label">Priority</label>
+          <select class="form-input" id="taskPriority">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="form-label">Notes <span class="optional">(optional)</span></label>
+      <textarea class="form-input" id="taskNotes" rows="3" placeholder="Any extra details..."></textarea>
+
+      <button class="btn btn-primary full-width mt" id="saveTask">Save Task</button>
+    </div>
+  </div>
+
+  <!-- ── Toast ───────────────────────────────── -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="js/app.js"></script>
+  <footer style="position:fixed;bottom:14px;right:20px;font-size:11px;color:#3d4255;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;">built by muaz ramzi</footer>
+</body>
+</html>
