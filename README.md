@@ -112,7 +112,7 @@ http://localhost:3000
 | GET | `/api/tasks` | List all tasks (optional `?subjectId=`) |
 | POST | `/api/tasks` | Create task `{ title, subjectId, deadline, priority, notes, repeat }` |
 | PATCH | `/api/tasks/:id/toggle` | Toggle completion — returns `{ task, nextTask }`, where `nextTask` is the auto-renewed occurrence if the task repeats |
-| PATCH | `/api/tasks/:id` | Update task fields (`title`, `deadline`, `priority`, `notes`, `order`) |
+| PATCH | `/api/tasks/:id` | Update task fields (`title`, `deadline`, `priority`, `notes`, `order`, `completedAt`) |
 | DELETE | `/api/tasks/:id` | Delete a task |
 | GET | `/api/stats` | Overall + per-subject progress stats, plus a 7-day `weekly` completion breakdown |
 
