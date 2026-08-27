@@ -80,7 +80,7 @@ app.get("/api/tasks", (req, res) => {
 
 // POST create a task
 app.post("/api/tasks", (req, res) => {
-  const { title, subjectId, deadline, priority, notes } = req.body;
+  const { title, subjectId, deadline, priority, notes, repeat } = req.body;
   if (!title || !title.trim()) {
     return res.status(400).json({ error: "Task title is required." });
   }
@@ -99,6 +99,7 @@ app.post("/api/tasks", (req, res) => {
     deadline: deadline || null,
     priority: priority || "medium", // low | medium | high
     notes: notes || "",
+    repeat: repeat && repeat !== "none" ? repeat : null, // null | "daily" | "weekly"
     completed: false,
     createdAt: new Date().toISOString(),
   };
@@ -107,6 +108,22 @@ app.post("/api/tasks", (req, res) => {
   res.status(201).json(newTask);
 });
 
+// Compute the next deadline for a recurring task.
+// Built entirely in UTC — mixing a local-time Date with toISOString()
+// silently shifts the result a day in either direction depending on the
+// server's timezone offset (verified broken in UTC+8), so every step here
+// stays in UTC to keep construction and serialization consistent.
+function nextRecurringDeadline(deadline, repeat) {
+  const [y, m, d] = (deadline || todayUTCString()).split("-").map(Number);
+  const base = new Date(Date.UTC(y, m - 1, d));
+  base.setUTCDate(base.getUTCDate() + (repeat === "weekly" ? 7 : 1));
+  return base.toISOString().slice(0, 10);
+}
+
+function todayUTCString() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 // PATCH toggle task completion
 app.patch("/api/tasks/:id/toggle", (req, res) => {
   const data = readData();
@@ -114,8 +131,26 @@ app.patch("/api/tasks/:id/toggle", (req, res) => {
   if (!task) return res.status(404).json({ error: "Task not found." });
 
   task.completed = !task.completed;
+  task.completedAt = task.completed ? new Date().toISOString() : null;
+
+  let nextTask = null;
+  if (task.completed && task.repeat) {
+    nextTask = {
+      id: generateId(),
+      title: task.title,
+      subjectId: task.subjectId,
+      deadline: nextRecurringDeadline(task.deadline, task.repeat),
+      priority: task.priority,
+      notes: task.notes,
+      repeat: task.repeat,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+    data.tasks.push(nextTask);
+  }
+
   writeData(data);
-  res.json(task);
+  res.json({ task, nextTask });
 });
 
 // PATCH update a task
@@ -124,11 +159,12 @@ app.patch("/api/tasks/:id", (req, res) => {
   const task = data.tasks.find((t) => t.id === req.params.id);
   if (!task) return res.status(404).json({ error: "Task not found." });
 
-  const { title, deadline, priority, notes } = req.body;
+  const { title, deadline, priority, notes, order } = req.body;
   if (title !== undefined) task.title = title.trim();
   if (deadline !== undefined) task.deadline = deadline;
   if (priority !== undefined) task.priority = priority;
   if (notes !== undefined) task.notes = notes;
+  if (order !== undefined) task.order = order;
 
   writeData(data);
   res.json(task);
@@ -162,7 +198,23 @@ app.get("/api/stats", (req, res) => {
       percent: sTasks.length ? Math.round((sCompleted / sTasks.length) * 100) : 0,
     };
   });
-  res.json({ total, completed, percent: total ? Math.round((completed / total) * 100) : 0, bySubject });
+  // Completions per day for the trailing 7 days (today inclusive), based on
+  // completedAt. Bucketed in UTC throughout, matching completedAt's own
+  // toISOString() format, so the day boundary lines up regardless of the
+  // server's local timezone offset.
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - i);
+    days.push(d);
+  }
+  const weekly = days.map((d) => {
+    const key = d.toISOString().slice(0, 10);
+    const count = data.tasks.filter((t) => t.completedAt && t.completedAt.slice(0, 10) === key).length;
+    return { date: key, label: d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }), count };
+  });
+
+  res.json({ total, completed, percent: total ? Math.round((completed / total) * 100) : 0, bySubject, weekly });
 });
 
 // ── Fallback ─────────────────────────────────────────────────

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Study Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -13,9 +13,12 @@
   <!-- ── Sidebar ─────────────────────────────── -->
   <aside class="sidebar">
     <div class="sidebar-top">
-      <div class="logo">
-        <span class="logo-icon">✦</span>
-        <span class="logo-text">StudyPlan</span>
+      <div class="logo-row">
+        <div class="logo">
+          <span class="logo-icon">✦</span>
+          <span class="logo-text">StudyPlan</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Switch light/dark mode">🌙</button>
       </div>
 
       <!-- Overall Progress -->
@@ -28,6 +31,12 @@
         <p class="progress-sub" id="overallSub">0 / 0 tasks done</p>
       </div>
 
+      <!-- Weekly Progress -->
+      <div class="week-chart card">
+        <p class="card-label">This Week</p>
+        <div class="week-bars" id="weekBars"></div>
+      </div>
+
       <!-- Subject List -->
       <div class="section-header">
         <span>Subjects</span>
@@ -37,7 +46,8 @@
     </div>
 
     <div class="sidebar-bottom">
-      <button class="btn btn-ghost full-width" id="showAll">Show All Tasks</button>
+      <button class="btn btn-ghost full-width" id="enableReminders">🔔 Enable Deadline Reminders</button>
+      <button class="btn btn-ghost full-width mt" id="showAll">Show All Tasks</button>
     </div>
   </aside>
 
@@ -48,7 +58,10 @@
         <h1 class="page-title" id="pageTitle">All Tasks</h1>
         <p class="page-sub" id="pageSub">Track everything you need to study</p>
       </div>
-      <button class="btn btn-primary" id="openTaskModal">＋ Add Task</button>
+      <div class="top-bar-actions">
+        <input class="search-input" id="searchInput" type="text" placeholder="🔍 Search tasks..." />
+        <button class="btn btn-primary" id="openTaskModal">＋ Add Task</button>
+      </div>
     </header>
 
     <!-- Filters -->
@@ -118,6 +131,13 @@
           </select>
         </div>
       </div>
+
+      <label class="form-label">Repeat <span class="optional">(optional)</span></label>
+      <select class="form-input" id="taskRepeat">
+        <option value="none" selected>Does not repeat</option>
+        <option value="daily">🔁 Daily</option>
+        <option value="weekly">🔁 Weekly</option>
+      </select>
 
       <label class="form-label">Notes <span class="optional">(optional)</span></label>
       <textarea class="form-input" id="taskNotes" rows="3" placeholder="Any extra details..."></textarea>

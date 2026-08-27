@@ -36,6 +36,12 @@ smart-study-planner/
 | **Filters** | Filter by All / Pending / Completed / Priority level |
 | **Delete** | Remove subjects (and their tasks) or individual tasks |
 | **Persistent Storage** | All data saved to `server/data.json` — survives restarts |
+| **Light / Dark Theme** | Manual toggle, persisted in `localStorage`, defaults to your OS preference on first visit |
+| **Search** | Live filter tasks by title/notes, composable with the existing filters |
+| **Drag & Drop** | Manually reorder tasks within the grid |
+| **Deadline Reminders** | Opt-in browser notifications for tasks due within 24 hours |
+| **Weekly Progress Chart** | 7-day bar chart of completions in the sidebar |
+| **Recurring Tasks** | Daily/weekly tasks auto-renew with a rolled-forward deadline when completed |
 
 ---
 
@@ -80,11 +86,11 @@ http://localhost:3000
 | POST | `/api/subjects` | Create a subject `{ name, color }` |
 | DELETE | `/api/subjects/:id` | Delete subject + its tasks |
 | GET | `/api/tasks` | List all tasks (optional `?subjectId=`) |
-| POST | `/api/tasks` | Create task `{ title, subjectId, deadline, priority, notes }` |
-| PATCH | `/api/tasks/:id/toggle` | Toggle completion |
-| PATCH | `/api/tasks/:id` | Update task fields |
+| POST | `/api/tasks` | Create task `{ title, subjectId, deadline, priority, notes, repeat }` |
+| PATCH | `/api/tasks/:id/toggle` | Toggle completion — returns `{ task, nextTask }`, where `nextTask` is the auto-renewed occurrence if the task repeats |
+| PATCH | `/api/tasks/:id` | Update task fields (`title`, `deadline`, `priority`, `notes`, `order`) |
 | DELETE | `/api/tasks/:id` | Delete a task |
-| GET | `/api/stats` | Overall + per-subject progress stats |
+| GET | `/api/stats` | Overall + per-subject progress stats, plus a 7-day `weekly` completion breakdown |
 
 ---
 
@@ -93,7 +99,7 @@ http://localhost:3000
 - **Backend**: Node.js, Express
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES2020+)
 - **Storage**: JSON file (`server/data.json`)
-- **Fonts**: Syne (headings) + DM Sans (body) via Google Fonts
+- **Fonts**: Plus Jakarta Sans (headings) + Inter (body) via Google Fonts
 
 ---
 

@@ -7,6 +7,7 @@ let allTasks    = [];
 let activeSubjectId = null;  // null = show all
 let activeFilter    = "all";
 let selectedColor   = "#6366f1";
+let searchQuery     = "";
 
 // ── DOM refs ─────────────────────────────────────────────
 const subjectList    = document.getElementById("subjectList");
@@ -18,13 +19,89 @@ const overallSub     = document.getElementById("overallSub");
 const pageTitle      = document.getElementById("pageTitle");
 const pageSub        = document.getElementById("pageSub");
 const toast          = document.getElementById("toast");
+const themeToggle    = document.getElementById("themeToggle");
+
+// ── Theme (dark / light) ─────────────────────────────────
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+    themeToggle.textContent = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    themeToggle.textContent = "🌙";
+  }
+}
+const storedTheme = localStorage.getItem("theme");
+const systemPrefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+applyTheme(storedTheme || (systemPrefersLight ? "light" : "dark"));
+
+themeToggle.addEventListener("click", () => {
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  const next = isLight ? "dark" : "light";
+  localStorage.setItem("theme", next);
+  applyTheme(next);
+});
 
 // ── Initialise ───────────────────────────────────────────
 (async () => {
   await loadSubjects();
   await loadTasks();
   updateStats();
+  checkDeadlineReminders();
+  setInterval(checkDeadlineReminders, 30 * 60 * 1000);
 })();
+
+// ── Deadline reminders ────────────────────────────────────
+const enableRemindersBtn = document.getElementById("enableReminders");
+updateReminderButtonLabel();
+
+enableRemindersBtn.addEventListener("click", async () => {
+  if (!("Notification" in window)) {
+    showToast("Notifications aren't supported in this browser", true);
+    return;
+  }
+  const permission = await Notification.requestPermission();
+  updateReminderButtonLabel();
+  if (permission === "granted") {
+    showToast("Reminders enabled 🔔");
+    checkDeadlineReminders();
+  } else if (permission === "denied") {
+    showToast("Reminders blocked — enable notifications in your browser settings", true);
+  }
+});
+
+function updateReminderButtonLabel() {
+  if (!("Notification" in window)) return;
+  enableRemindersBtn.textContent = Notification.permission === "granted"
+    ? "🔔 Reminders On" : "🔔 Enable Deadline Reminders";
+}
+
+function checkDeadlineReminders() {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const notifiedKey = "notifiedTasks_" + todayKey;
+  const notified = new Set(JSON.parse(localStorage.getItem(notifiedKey) || "[]"));
+
+  const now = new Date();
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+  allTasks
+    .filter(t => !t.completed && t.deadline && !notified.has(t.id))
+    .forEach(t => {
+      const d = new Date(t.deadline + "T00:00:00");
+      if (d <= in24h) {
+        const subj = allSubjects.find(s => s.id === t.subjectId);
+        new Notification("📚 Deadline coming up", {
+          body: `${t.title}${subj ? " · " + subj.name : ""} — due ${t.deadline}`,
+          tag: t.id,
+        });
+        notified.add(t.id);
+      }
+    });
+
+  localStorage.setItem(notifiedKey, JSON.stringify([...notified]));
+}
 
 // ── API helpers ──────────────────────────────────────────
 async function apiFetch(path, opts = {}) {
@@ -56,7 +133,19 @@ async function updateStats() {
     overallPercent.textContent = stats.percent + "%";
     overallBar.style.width     = stats.percent + "%";
     overallSub.textContent     = `${stats.completed} / ${stats.total} tasks done`;
+    renderWeekChart(stats.weekly || []);
   } catch (e) { /* non-critical */ }
+}
+
+function renderWeekChart(weekly) {
+  const weekBars = document.getElementById("weekBars");
+  const max = Math.max(1, ...weekly.map(d => d.count));
+  weekBars.innerHTML = weekly.map(d => `
+    <div class="week-bar-col" title="${d.count} completed on ${d.date}">
+      <div class="week-bar" style="height:${Math.round((d.count / max) * 100)}%"></div>
+      <span class="week-bar-label">${d.label[0]}</span>
+    </div>
+  `).join("");
 }
 
 // ── Render Subjects ──────────────────────────────────────
@@ -116,10 +205,19 @@ function renderTasks() {
   if (activeFilter === "medium")    tasks = tasks.filter(t => t.priority === "medium");
   if (activeFilter === "low")       tasks = tasks.filter(t => t.priority === "low");
 
-  // Sort: incomplete first, then by deadline, then by priority weight
+  // Filter by search query (title + notes)
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    tasks = tasks.filter(t =>
+      t.title.toLowerCase().includes(q) || (t.notes || "").toLowerCase().includes(q)
+    );
+  }
+
+  // Sort: incomplete first, then manual drag order (if set), then deadline, then priority weight
   const pw = { high: 0, medium: 1, low: 2 };
   tasks.sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    if (a.order != null && b.order != null) return a.order - b.order;
     if (a.deadline && b.deadline) return new Date(a.deadline) - new Date(b.deadline);
     if (a.deadline) return -1;
     if (b.deadline) return 1;
@@ -152,6 +250,15 @@ function createTaskCard(task) {
   card.className = "task-card" + (task.completed ? " completed" : "");
   card.style.setProperty("--subject-color", color);
   card.dataset.id = task.id;
+  // Completed tasks always sort after pending ones (see renderTasks), so
+  // letting them be dragged into the pending group would just snap back
+  // on the next render — only pending cards are meaningfully reorderable.
+  card.draggable = !task.completed;
+  card.addEventListener("dragstart", () => card.classList.add("dragging"));
+  card.addEventListener("dragend", () => {
+    card.classList.remove("dragging");
+    commitReorder();
+  });
 
   const deadlineHtml = task.deadline ? (() => {
     const d = new Date(task.deadline + "T00:00:00");
@@ -172,6 +279,7 @@ function createTaskCard(task) {
     <div class="task-meta">
       ${subj ? `<span class="tag tag-subject" style="--subject-color:${color}">${escHtml(subj.name)}</span>` : ""}
       <span class="tag tag-priority-${task.priority}">${priorityLabel(task.priority)}</span>
+      ${task.repeat ? `<span class="tag tag-repeat">🔁 ${task.repeat}</span>` : ""}
       ${deadlineHtml}
     </div>
     ${notesHtml}
@@ -183,6 +291,56 @@ function createTaskCard(task) {
   card.querySelector(`[data-toggle]`).addEventListener("click", () => toggleTask(task.id));
   card.querySelector(`[data-del]`).addEventListener("click", () => deleteTask(task.id));
   return card;
+}
+
+// ── Drag-and-drop reordering ─────────────────────────────
+taskGrid.addEventListener("dragover", (e) => {
+  const dragging = taskGrid.querySelector(".dragging");
+  if (!dragging) return;
+  e.preventDefault();
+  const after = getDragAfterElement(taskGrid, e.clientY);
+  if (after == null) taskGrid.appendChild(dragging);
+  else taskGrid.insertBefore(dragging, after);
+});
+
+function getDragAfterElement(container, y) {
+  const cards = [...container.querySelectorAll(".task-card:not(.dragging)")];
+  return cards.reduce((closest, card) => {
+    const box = card.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset, element: card };
+    return closest;
+  }, { offset: -Infinity, element: null }).element;
+}
+
+function commitReorder() {
+  const visibleIds = [...taskGrid.querySelectorAll(".task-card")].map(c => c.dataset.id);
+  if (visibleIds.length < 2) return;
+
+  const globalOrder = [...allTasks]
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+    .map(t => t.id);
+
+  let insertAt = 0;
+  for (const id of globalOrder) {
+    if (visibleIds.includes(id)) break;
+    insertAt++;
+  }
+  const withoutVisible = globalOrder.filter(id => !visibleIds.includes(id));
+  const merged = [
+    ...withoutVisible.slice(0, insertAt),
+    ...visibleIds,
+    ...withoutVisible.slice(insertAt),
+  ];
+
+  merged.forEach((id, idx) => {
+    const task = allTasks.find(t => t.id === id);
+    if (task && task.order !== idx) {
+      task.order = idx;
+      apiFetch(`/api/tasks/${id}`, { method: "PATCH", body: JSON.stringify({ order: idx }) })
+        .catch(() => {});
+    }
+  });
 }
 
 function priorityLabel(p) {
@@ -232,9 +390,14 @@ async function addTask(data) {
 }
 
 async function toggleTask(id) {
-  const updated = await apiFetch(`/api/tasks/${id}/toggle`, { method: "PATCH" });
+  const { task: updated, nextTask } = await apiFetch(`/api/tasks/${id}/toggle`, { method: "PATCH" });
   const idx = allTasks.findIndex(t => t.id === id);
   if (idx !== -1) allTasks[idx] = updated;
+  if (nextTask) {
+    allTasks.push(nextTask);
+    showToast(`Recurring task renewed — next due ${nextTask.deadline} 🔁`);
+  }
+  renderSubjects(); // update counts if a recurring task was added
   renderTasks();
   updateStats();
 }
@@ -283,6 +446,7 @@ document.getElementById("openTaskModal").addEventListener("click", () => {
   document.getElementById("taskNotes").value    = "";
   document.getElementById("taskDeadline").value = "";
   document.getElementById("taskPriority").value = "medium";
+  document.getElementById("taskRepeat").value   = "none";
   openModal("taskModal");
 });
 
@@ -299,12 +463,19 @@ document.getElementById("saveTask").addEventListener("click", async () => {
   const subjectId = document.getElementById("taskSubject").value;
   const deadline  = document.getElementById("taskDeadline").value;
   const priority  = document.getElementById("taskPriority").value;
+  const repeat    = document.getElementById("taskRepeat").value;
   const notes     = document.getElementById("taskNotes").value.trim();
   if (!title) { shakeInput("taskTitle"); return; }
   try {
-    await addTask({ title, subjectId, deadline, priority, notes });
+    await addTask({ title, subjectId, deadline, priority, repeat, notes });
     closeModal("taskModal");
   } catch (e) { showToast("Error: " + e.message, true); }
+});
+
+// ── Search ────────────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  searchQuery = e.target.value.trim();
+  renderTasks();
 });
 
 // ── Filter buttons ────────────────────────────────────────
