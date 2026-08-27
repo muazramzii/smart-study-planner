@@ -250,7 +250,10 @@ function createTaskCard(task) {
   card.className = "task-card" + (task.completed ? " completed" : "");
   card.style.setProperty("--subject-color", color);
   card.dataset.id = task.id;
-  card.draggable = true;
+  // Completed tasks always sort after pending ones (see renderTasks), so
+  // letting them be dragged into the pending group would just snap back
+  // on the next render — only pending cards are meaningfully reorderable.
+  card.draggable = !task.completed;
   card.addEventListener("dragstart", () => card.classList.add("dragging"));
   card.addEventListener("dragend", () => {
     card.classList.remove("dragging");
