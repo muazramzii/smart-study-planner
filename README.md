@@ -2,6 +2,8 @@
 
 A clean, full-stack study task manager built with **Node.js + Express** on the backend and **vanilla HTML/CSS/JS** on the frontend. Data is stored in a local `data.json` file — no database needed.
 
+**🔗 Live demo:** [smart-study-planner-production-9021.up.railway.app](https://smart-study-planner-production-9021.up.railway.app/)
+
 ![Smart Study Planner — dark mode](screenshots/dark-mode.png)
 
 ---
@@ -134,7 +136,7 @@ http://localhost:3000
 - Add a calendar / weekly view
 - Export tasks to PDF
 - Add study session timer (Pomodoro)
-- Deploy to Render, Railway, or Vercel
+- Set up persistent storage (e.g. a Railway Volume) so `data.json` survives redeploys on the live demo
 
 ---
 
