@@ -40,23 +40,32 @@ smart-study-planner/
 
 ## ✨ Features
 
-| Feature | Details |
-|---|---|
-| **Subjects** | Create colour-coded subjects (e.g. Maths, Physics) |
-| **Tasks** | Add tasks with title, subject, deadline, priority, and notes |
-| **Priorities** | 🔴 High / 🟡 Medium / 🟢 Low |
-| **Deadlines** | Overdue tasks are highlighted in red |
-| **Complete Tasks** | One-click checkbox to mark done |
-| **Progress Bar** | Overall % progress in the sidebar, updates live |
-| **Filters** | Filter by All / Pending / Completed / Priority level |
-| **Delete** | Remove subjects (and their tasks) or individual tasks |
-| **Persistent Storage** | All data saved to `server/data.json` — survives restarts |
-| **Light / Dark Theme** | Manual toggle, persisted in `localStorage`, defaults to your OS preference on first visit |
-| **Search** | Live filter tasks by title/notes, composable with the existing filters |
-| **Drag & Drop** | Manually reorder tasks within the grid |
-| **Deadline Reminders** | Opt-in browser notifications for tasks due within 24 hours |
-| **Weekly Progress Chart** | 7-day bar chart of completions in the sidebar |
-| **Recurring Tasks** | Daily/weekly tasks auto-renew with a rolled-forward deadline when completed |
+### Organize your work
+
+- **Subjects** — Create colour-coded subjects (e.g. JavaScript, Machine Learning) so tasks are grouped by course instead of living in one undifferentiated list. Deleting a subject removes its tasks with it, so there's no orphaned clutter.
+- **Tasks** — Each task carries a title, subject, deadline, priority, and optional notes — enough detail to act on the task without leaving the card.
+- **Search** — A live search bar filters the visible tasks by title or notes as you type, and composes with whatever subject/status/priority filter is already active — useful the moment your task list grows past a quick scan.
+- **Filters** — Switch between All / Pending / Completed / 🔴 High / 🟡 Medium / 🟢 Low with one click, so you can answer "what's actually urgent right now" without scrolling past everything else.
+- **Drag & drop reordering** — Manually drag pending tasks into the order you actually plan to tackle them in, independent of deadline or priority. Completed tasks stay grouped at the bottom regardless, so finished work doesn't clutter your working order.
+
+### Track progress & stay ahead of deadlines
+
+- **Priorities** — 🔴 High / 🟡 Medium / 🟢 Low tags make urgency visible at a glance across a full grid of tasks.
+- **Overdue highlighting** — A task past its deadline and still incomplete is flagged in red with a ⚠️, so nothing slips by quietly.
+- **One-click completion** — A single checkbox click marks a task done (and un-does it just as easily).
+- **Overall progress bar** — The sidebar shows a live percentage and "X / Y tasks done" count across everything you're tracking.
+- **Weekly progress chart** — A 7-day bar chart in the sidebar visualizes how many tasks you completed each day, making study consistency (or a dry streak) visible instead of invisible.
+- **Deadline reminders** — Opt in and the browser will notify you when a task is due within 24 hours, even if the tab isn't focused — a safety net for the deadlines you'd otherwise only remember at the worst possible time.
+- **Recurring tasks** — Mark a task daily or weekly (e.g. "revise lecture notes"), and completing it automatically creates the next occurrence with the deadline rolled forward — no need to manually re-add routine study habits every day.
+
+### Comfort & personalization
+
+- **Light / dark theme** — Toggle manually with the 🌙/☀️ button in the sidebar; your choice is remembered via `localStorage`. First-time visitors get their OS's light/dark preference automatically, before ever touching the toggle.
+- **Persistent storage** — Everything is saved to `server/data.json`, so your subjects and tasks survive server restarts without needing a real database — appropriate for a personal or small-scale study tool.
+
+<p align="center">
+  <img src="screenshots/light-mode.png" alt="Smart Study Planner — light mode" width="100%" />
+</p>
 
 ---
 
