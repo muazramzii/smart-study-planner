@@ -18,6 +18,26 @@ const overallSub     = document.getElementById("overallSub");
 const pageTitle      = document.getElementById("pageTitle");
 const pageSub        = document.getElementById("pageSub");
 const toast          = document.getElementById("toast");
+const themeToggle    = document.getElementById("themeToggle");
+
+// ── Theme (dark / light) ─────────────────────────────────
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+    themeToggle.textContent = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    themeToggle.textContent = "🌙";
+  }
+}
+applyTheme(localStorage.getItem("theme") || "dark");
+
+themeToggle.addEventListener("click", () => {
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  const next = isLight ? "dark" : "light";
+  localStorage.setItem("theme", next);
+  applyTheme(next);
+});
 
 // ── Initialise ───────────────────────────────────────────
 (async () => {
