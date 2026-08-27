@@ -276,6 +276,7 @@ function createTaskCard(task) {
     <div class="task-meta">
       ${subj ? `<span class="tag tag-subject" style="--subject-color:${color}">${escHtml(subj.name)}</span>` : ""}
       <span class="tag tag-priority-${task.priority}">${priorityLabel(task.priority)}</span>
+      ${task.repeat ? `<span class="tag tag-repeat">🔁 ${task.repeat}</span>` : ""}
       ${deadlineHtml}
     </div>
     ${notesHtml}
@@ -386,9 +387,14 @@ async function addTask(data) {
 }
 
 async function toggleTask(id) {
-  const updated = await apiFetch(`/api/tasks/${id}/toggle`, { method: "PATCH" });
+  const { task: updated, nextTask } = await apiFetch(`/api/tasks/${id}/toggle`, { method: "PATCH" });
   const idx = allTasks.findIndex(t => t.id === id);
   if (idx !== -1) allTasks[idx] = updated;
+  if (nextTask) {
+    allTasks.push(nextTask);
+    showToast(`Recurring task renewed — next due ${nextTask.deadline} 🔁`);
+  }
+  renderSubjects(); // update counts if a recurring task was added
   renderTasks();
   updateStats();
 }
@@ -437,6 +443,7 @@ document.getElementById("openTaskModal").addEventListener("click", () => {
   document.getElementById("taskNotes").value    = "";
   document.getElementById("taskDeadline").value = "";
   document.getElementById("taskPriority").value = "medium";
+  document.getElementById("taskRepeat").value   = "none";
   openModal("taskModal");
 });
 
@@ -453,10 +460,11 @@ document.getElementById("saveTask").addEventListener("click", async () => {
   const subjectId = document.getElementById("taskSubject").value;
   const deadline  = document.getElementById("taskDeadline").value;
   const priority  = document.getElementById("taskPriority").value;
+  const repeat    = document.getElementById("taskRepeat").value;
   const notes     = document.getElementById("taskNotes").value.trim();
   if (!title) { shakeInput("taskTitle"); return; }
   try {
-    await addTask({ title, subjectId, deadline, priority, notes });
+    await addTask({ title, subjectId, deadline, priority, repeat, notes });
     closeModal("taskModal");
   } catch (e) { showToast("Error: " + e.message, true); }
 });
