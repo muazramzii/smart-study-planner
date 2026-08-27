@@ -47,7 +47,61 @@ themeToggle.addEventListener("click", () => {
   await loadSubjects();
   await loadTasks();
   updateStats();
+  checkDeadlineReminders();
+  setInterval(checkDeadlineReminders, 30 * 60 * 1000);
 })();
+
+// ── Deadline reminders ────────────────────────────────────
+const enableRemindersBtn = document.getElementById("enableReminders");
+updateReminderButtonLabel();
+
+enableRemindersBtn.addEventListener("click", async () => {
+  if (!("Notification" in window)) {
+    showToast("Notifications aren't supported in this browser", true);
+    return;
+  }
+  const permission = await Notification.requestPermission();
+  updateReminderButtonLabel();
+  if (permission === "granted") {
+    showToast("Reminders enabled 🔔");
+    checkDeadlineReminders();
+  } else if (permission === "denied") {
+    showToast("Reminders blocked — enable notifications in your browser settings", true);
+  }
+});
+
+function updateReminderButtonLabel() {
+  if (!("Notification" in window)) return;
+  enableRemindersBtn.textContent = Notification.permission === "granted"
+    ? "🔔 Reminders On" : "🔔 Enable Deadline Reminders";
+}
+
+function checkDeadlineReminders() {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const notifiedKey = "notifiedTasks_" + todayKey;
+  const notified = new Set(JSON.parse(localStorage.getItem(notifiedKey) || "[]"));
+
+  const now = new Date();
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+  allTasks
+    .filter(t => !t.completed && t.deadline && !notified.has(t.id))
+    .forEach(t => {
+      const d = new Date(t.deadline + "T00:00:00");
+      if (d <= in24h) {
+        const subj = allSubjects.find(s => s.id === t.subjectId);
+        new Notification("📚 Deadline coming up", {
+          body: `${t.title}${subj ? " · " + subj.name : ""} — due ${t.deadline}`,
+          tag: t.id,
+        });
+        notified.add(t.id);
+      }
+    });
+
+  localStorage.setItem(notifiedKey, JSON.stringify([...notified]));
+}
 
 // ── API helpers ──────────────────────────────────────────
 async function apiFetch(path, opts = {}) {
