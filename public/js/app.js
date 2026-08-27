@@ -7,6 +7,7 @@ let allTasks    = [];
 let activeSubjectId = null;  // null = show all
 let activeFilter    = "all";
 let selectedColor   = "#6366f1";
+let searchQuery     = "";
 
 // ── DOM refs ─────────────────────────────────────────────
 const subjectList    = document.getElementById("subjectList");
@@ -135,6 +136,14 @@ function renderTasks() {
   if (activeFilter === "high")      tasks = tasks.filter(t => t.priority === "high");
   if (activeFilter === "medium")    tasks = tasks.filter(t => t.priority === "medium");
   if (activeFilter === "low")       tasks = tasks.filter(t => t.priority === "low");
+
+  // Filter by search query (title + notes)
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    tasks = tasks.filter(t =>
+      t.title.toLowerCase().includes(q) || (t.notes || "").toLowerCase().includes(q)
+    );
+  }
 
   // Sort: incomplete first, then by deadline, then by priority weight
   const pw = { high: 0, medium: 1, low: 2 };
@@ -325,6 +334,12 @@ document.getElementById("saveTask").addEventListener("click", async () => {
     await addTask({ title, subjectId, deadline, priority, notes });
     closeModal("taskModal");
   } catch (e) { showToast("Error: " + e.message, true); }
+});
+
+// ── Search ────────────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  searchQuery = e.target.value.trim();
+  renderTasks();
 });
 
 // ── Filter buttons ────────────────────────────────────────

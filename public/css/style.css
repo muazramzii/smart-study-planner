@@ -189,6 +189,16 @@ body {
 }
 .page-sub { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
+.top-bar-actions { display: flex; align-items: center; gap: 10px; }
+.search-input {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 10px 14px; width: 220px;
+  border-radius: var(--radius-sm); font-family: var(--font-body);
+  font-size: 14px; transition: var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); width: 260px; }
+
 /* Filter bar */
 .filter-bar {
   display: flex; gap: 8px; margin-bottom: 28px;
