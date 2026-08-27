@@ -14,8 +14,8 @@
   --radius: 14px;
   --radius-sm: 8px;
   --shadow: 0 4px 24px rgba(0,0,0,0.35);
-  --font-head: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-head: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
   --sidebar-w: 280px;
   --transition: 0.2s ease;
 }
