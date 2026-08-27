@@ -31,7 +31,9 @@ function applyTheme(theme) {
     themeToggle.textContent = "🌙";
   }
 }
-applyTheme(localStorage.getItem("theme") || "dark");
+const storedTheme = localStorage.getItem("theme");
+const systemPrefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+applyTheme(storedTheme || (systemPrefersLight ? "light" : "dark"));
 
 themeToggle.addEventListener("click", () => {
   const isLight = document.documentElement.getAttribute("data-theme") === "light";
