@@ -10,14 +10,18 @@
 </head>
 <body>
 
+  <!-- ── Sidebar backdrop (mobile drawer) ────── -->
+  <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
   <!-- ── Sidebar ─────────────────────────────── -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
       <div class="logo-row">
         <div class="logo">
           <span class="logo-icon">✦</span>
           <span class="logo-text">StudyPlan</span>
         </div>
+        <button class="icon-btn sidebar-close-btn" id="closeSidebar" title="Close menu">✕</button>
         <button class="theme-toggle" id="themeToggle" title="Switch light/dark mode">🌙</button>
       </div>
 
@@ -54,6 +58,7 @@
   <!-- ── Main ────────────────────────────────── -->
   <main class="main">
     <header class="top-bar">
+      <button class="icon-btn mobile-menu-btn" id="openSidebar" title="Open menu">☰</button>
       <div>
         <h1 class="page-title" id="pageTitle">All Tasks</h1>
         <p class="page-sub" id="pageSub">Track everything you need to study</p>
