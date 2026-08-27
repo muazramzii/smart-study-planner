@@ -114,6 +114,7 @@ app.patch("/api/tasks/:id/toggle", (req, res) => {
   if (!task) return res.status(404).json({ error: "Task not found." });
 
   task.completed = !task.completed;
+  task.completedAt = task.completed ? new Date().toISOString() : null;
   writeData(data);
   res.json(task);
 });
@@ -163,7 +164,21 @@ app.get("/api/stats", (req, res) => {
       percent: sTasks.length ? Math.round((sCompleted / sTasks.length) * 100) : 0,
     };
   });
-  res.json({ total, completed, percent: total ? Math.round((completed / total) * 100) : 0, bySubject });
+  // Completions per day for the last 7 days (Mon-first), based on completedAt
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  const weekly = days.map((d) => {
+    const key = d.toISOString().slice(0, 10);
+    const count = data.tasks.filter((t) => t.completedAt && t.completedAt.slice(0, 10) === key).length;
+    return { date: key, label: d.toLocaleDateString("en-US", { weekday: "short" }), count };
+  });
+
+  res.json({ total, completed, percent: total ? Math.round((completed / total) * 100) : 0, bySubject, weekly });
 });
 
 // ── Fallback ─────────────────────────────────────────────────
