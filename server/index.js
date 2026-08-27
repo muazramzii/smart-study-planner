@@ -80,7 +80,7 @@ app.get("/api/tasks", (req, res) => {
 
 // POST create a task
 app.post("/api/tasks", (req, res) => {
-  const { title, subjectId, deadline, priority, notes } = req.body;
+  const { title, subjectId, deadline, priority, notes, repeat } = req.body;
   if (!title || !title.trim()) {
     return res.status(400).json({ error: "Task title is required." });
   }
@@ -99,6 +99,7 @@ app.post("/api/tasks", (req, res) => {
     deadline: deadline || null,
     priority: priority || "medium", // low | medium | high
     notes: notes || "",
+    repeat: repeat && repeat !== "none" ? repeat : null, // null | "daily" | "weekly"
     completed: false,
     createdAt: new Date().toISOString(),
   };
@@ -106,6 +107,13 @@ app.post("/api/tasks", (req, res) => {
   writeData(data);
   res.status(201).json(newTask);
 });
+
+// Compute the next deadline for a recurring task
+function nextRecurringDeadline(deadline, repeat) {
+  const base = deadline ? new Date(deadline + "T00:00:00") : new Date();
+  base.setDate(base.getDate() + (repeat === "weekly" ? 7 : 1));
+  return base.toISOString().slice(0, 10);
+}
 
 // PATCH toggle task completion
 app.patch("/api/tasks/:id/toggle", (req, res) => {
@@ -115,8 +123,25 @@ app.patch("/api/tasks/:id/toggle", (req, res) => {
 
   task.completed = !task.completed;
   task.completedAt = task.completed ? new Date().toISOString() : null;
+
+  let nextTask = null;
+  if (task.completed && task.repeat) {
+    nextTask = {
+      id: generateId(),
+      title: task.title,
+      subjectId: task.subjectId,
+      deadline: nextRecurringDeadline(task.deadline, task.repeat),
+      priority: task.priority,
+      notes: task.notes,
+      repeat: task.repeat,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+    data.tasks.push(nextTask);
+  }
+
   writeData(data);
-  res.json(task);
+  res.json({ task, nextTask });
 });
 
 // PATCH update a task
