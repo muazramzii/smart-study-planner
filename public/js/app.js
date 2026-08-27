@@ -20,6 +20,21 @@ const pageTitle      = document.getElementById("pageTitle");
 const pageSub        = document.getElementById("pageSub");
 const toast          = document.getElementById("toast");
 const themeToggle    = document.getElementById("themeToggle");
+const sidebar        = document.getElementById("sidebar");
+const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
+// ── Mobile sidebar drawer ─────────────────────────────────
+function openMobileSidebar() {
+  sidebar.classList.add("open");
+  sidebarBackdrop.classList.remove("hidden");
+}
+function closeMobileSidebar() {
+  sidebar.classList.remove("open");
+  sidebarBackdrop.classList.add("hidden");
+}
+document.getElementById("openSidebar").addEventListener("click", openMobileSidebar);
+document.getElementById("closeSidebar").addEventListener("click", closeMobileSidebar);
+sidebarBackdrop.addEventListener("click", closeMobileSidebar);
 
 // ── Theme (dark / light) ─────────────────────────────────
 function applyTheme(theme) {
@@ -189,6 +204,7 @@ function setActiveSubject(id) {
     pageTitle.textContent = subj.name;
     pageSub.textContent   = "Tasks for this subject";
   }
+  closeMobileSidebar();
 }
 
 // ── Render Tasks ─────────────────────────────────────────
@@ -497,6 +513,7 @@ document.getElementById("showAll").addEventListener("click", () => {
   renderTasks();
   pageTitle.textContent = "All Tasks";
   pageSub.textContent   = "Track everything you need to study";
+  closeMobileSidebar();
 });
 
 // ── Modal close helpers ───────────────────────────────────
@@ -512,6 +529,7 @@ document.querySelectorAll(".modal-overlay").forEach(overlay => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     ["subjectModal","taskModal"].forEach(closeModal);
+    closeMobileSidebar();
   }
 });
 

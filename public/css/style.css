@@ -81,6 +81,7 @@ body {
   flex-shrink: 0;
 }
 .theme-toggle:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.icon-btn.sidebar-close-btn { display: none; }
 
 /* Overall Progress card */
 .card {
@@ -200,6 +201,8 @@ body {
   justify-content: space-between;
   margin-bottom: 28px;
 }
+.top-bar-heading { display: flex; align-items: center; gap: 12px; }
+.icon-btn.mobile-menu-btn { display: none; }
 .page-title {
   font-family: var(--font-head);
   font-size: 32px; font-weight: 800;
@@ -426,6 +429,15 @@ body {
 }
 .toast.hidden { display: none; }
 
+/* ── Sidebar backdrop (mobile drawer) ─────────────────────── */
+.sidebar-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 150;
+  animation: fadeIn 0.2s ease;
+}
+.sidebar-backdrop.hidden { display: none; }
+
 /* ── Animations ────────────────────────────────────────── */
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
@@ -439,8 +451,15 @@ body {
 
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
-  :root { --sidebar-w: 0px; }
-  .sidebar { display: none; }
+  .sidebar {
+    z-index: 160;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: var(--shadow);
+  }
+  .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; padding: 24px 20px; }
   .task-grid { grid-template-columns: 1fr; }
+  .icon-btn.mobile-menu-btn { display: flex; }
+  .icon-btn.sidebar-close-btn { display: flex; }
 }
