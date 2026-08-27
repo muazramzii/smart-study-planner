@@ -81,7 +81,7 @@ body {
   flex-shrink: 0;
 }
 .theme-toggle:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-.sidebar-close-btn { display: none; }
+.icon-btn.sidebar-close-btn { display: none; }
 
 /* Overall Progress card */
 .card {
@@ -202,7 +202,7 @@ body {
   margin-bottom: 28px;
 }
 .top-bar-heading { display: flex; align-items: center; gap: 12px; }
-.mobile-menu-btn { display: none; }
+.icon-btn.mobile-menu-btn { display: none; }
 .page-title {
   font-family: var(--font-head);
   font-size: 32px; font-weight: 800;
@@ -460,6 +460,6 @@ body {
   .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; padding: 24px 20px; }
   .task-grid { grid-template-columns: 1fr; }
-  .mobile-menu-btn { display: flex; }
-  .sidebar-close-btn { display: flex; }
+  .icon-btn.mobile-menu-btn { display: flex; }
+  .icon-btn.sidebar-close-btn { display: flex; }
 }
