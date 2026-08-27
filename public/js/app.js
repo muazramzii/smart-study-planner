@@ -133,7 +133,19 @@ async function updateStats() {
     overallPercent.textContent = stats.percent + "%";
     overallBar.style.width     = stats.percent + "%";
     overallSub.textContent     = `${stats.completed} / ${stats.total} tasks done`;
+    renderWeekChart(stats.weekly || []);
   } catch (e) { /* non-critical */ }
+}
+
+function renderWeekChart(weekly) {
+  const weekBars = document.getElementById("weekBars");
+  const max = Math.max(1, ...weekly.map(d => d.count));
+  weekBars.innerHTML = weekly.map(d => `
+    <div class="week-bar-col" title="${d.count} completed on ${d.date}">
+      <div class="week-bar" style="height:${Math.round((d.count / max) * 100)}%"></div>
+      <span class="week-bar-label">${d.label[0]}</span>
+    </div>
+  `).join("");
 }
 
 // ── Render Subjects ──────────────────────────────────────
