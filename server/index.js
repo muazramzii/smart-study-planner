@@ -108,11 +108,20 @@ app.post("/api/tasks", (req, res) => {
   res.status(201).json(newTask);
 });
 
-// Compute the next deadline for a recurring task
+// Compute the next deadline for a recurring task.
+// Built entirely in UTC — mixing a local-time Date with toISOString()
+// silently shifts the result a day in either direction depending on the
+// server's timezone offset (verified broken in UTC+8), so every step here
+// stays in UTC to keep construction and serialization consistent.
 function nextRecurringDeadline(deadline, repeat) {
-  const base = deadline ? new Date(deadline + "T00:00:00") : new Date();
-  base.setDate(base.getDate() + (repeat === "weekly" ? 7 : 1));
+  const [y, m, d] = (deadline || todayUTCString()).split("-").map(Number);
+  const base = new Date(Date.UTC(y, m - 1, d));
+  base.setUTCDate(base.getUTCDate() + (repeat === "weekly" ? 7 : 1));
   return base.toISOString().slice(0, 10);
+}
+
+function todayUTCString() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 // PATCH toggle task completion
@@ -189,18 +198,20 @@ app.get("/api/stats", (req, res) => {
       percent: sTasks.length ? Math.round((sCompleted / sTasks.length) * 100) : 0,
     };
   });
-  // Completions per day for the last 7 days (Mon-first), based on completedAt
+  // Completions per day for the trailing 7 days (today inclusive), based on
+  // completedAt. Bucketed in UTC throughout, matching completedAt's own
+  // toISOString() format, so the day boundary lines up regardless of the
+  // server's local timezone offset.
   const days = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() - i);
+    d.setUTCDate(d.getUTCDate() - i);
     days.push(d);
   }
   const weekly = days.map((d) => {
     const key = d.toISOString().slice(0, 10);
     const count = data.tasks.filter((t) => t.completedAt && t.completedAt.slice(0, 10) === key).length;
-    return { date: key, label: d.toLocaleDateString("en-US", { weekday: "short" }), count };
+    return { date: key, label: d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }), count };
   });
 
   res.json({ total, completed, percent: total ? Math.round((completed / total) * 100) : 0, bySubject, weekly });
