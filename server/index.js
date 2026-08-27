@@ -159,12 +159,13 @@ app.patch("/api/tasks/:id", (req, res) => {
   const task = data.tasks.find((t) => t.id === req.params.id);
   if (!task) return res.status(404).json({ error: "Task not found." });
 
-  const { title, deadline, priority, notes, order } = req.body;
+  const { title, deadline, priority, notes, order, completedAt } = req.body;
   if (title !== undefined) task.title = title.trim();
   if (deadline !== undefined) task.deadline = deadline;
   if (priority !== undefined) task.priority = priority;
   if (notes !== undefined) task.notes = notes;
   if (order !== undefined) task.order = order;
+  if (completedAt !== undefined) task.completedAt = completedAt;
 
   writeData(data);
   res.json(task);
