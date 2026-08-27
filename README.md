@@ -2,6 +2,20 @@
 
 A clean, full-stack study task manager built with **Node.js + Express** on the backend and **vanilla HTML/CSS/JS** on the frontend. Data is stored in a local `data.json` file — no database needed.
 
+![Smart Study Planner — dark mode](screenshots/dark-mode.png)
+
+---
+
+## 🎯 Who this is for
+
+Built for **students juggling multiple subjects at once** — the kind of week where a JavaScript lab is due Tuesday, a machine learning reading is due Wednesday, and a group presentation is due Friday, each tracked in a different place (or not tracked at all). If you're a student, self-learner, or anyone studying several courses in parallel and want one place to see what's due, what's done, and what's slipping, this is for you.
+
+## 🧩 The problem it solves
+
+Coursework deadlines tend to live scattered across WhatsApp messages, lecturer announcements, sticky notes, and memory, with no single view of what actually needs doing this week and how urgent each thing is. That leads to the usual failure modes: forgotten assignments, last-minute scrambles, and no real sense of whether you're making progress across your subjects.
+
+Smart Study Planner centralizes all of that — subjects, tasks, deadlines, and priorities in one board — with visual progress tracking so momentum is visible at a glance instead of guessed at.
+
 ---
 
 ## 🗂 Folder Structure
@@ -17,6 +31,7 @@ smart-study-planner/
 │   │   └── style.css
 │   └── js/
 │       └── app.js
+├── screenshots/        ← UI screenshots used in this README
 ├── package.json
 └── README.md
 ```
