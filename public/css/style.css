@@ -252,6 +252,8 @@ body {
 .task-card:hover { border-color: rgba(99,102,241,0.4); box-shadow: var(--shadow); transform: translateY(-2px); }
 .task-card.completed { opacity: 0.55; }
 .task-card.completed .task-title { text-decoration: line-through; }
+.task-card { cursor: grab; }
+.task-card.dragging { opacity: 0.4; cursor: grabbing; }
 
 .task-card-top {
   display: flex; align-items: flex-start; gap: 12px;

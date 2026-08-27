@@ -201,10 +201,11 @@ function renderTasks() {
     );
   }
 
-  // Sort: incomplete first, then by deadline, then by priority weight
+  // Sort: incomplete first, then manual drag order (if set), then deadline, then priority weight
   const pw = { high: 0, medium: 1, low: 2 };
   tasks.sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    if (a.order != null && b.order != null) return a.order - b.order;
     if (a.deadline && b.deadline) return new Date(a.deadline) - new Date(b.deadline);
     if (a.deadline) return -1;
     if (b.deadline) return 1;
@@ -237,6 +238,12 @@ function createTaskCard(task) {
   card.className = "task-card" + (task.completed ? " completed" : "");
   card.style.setProperty("--subject-color", color);
   card.dataset.id = task.id;
+  card.draggable = true;
+  card.addEventListener("dragstart", () => card.classList.add("dragging"));
+  card.addEventListener("dragend", () => {
+    card.classList.remove("dragging");
+    commitReorder();
+  });
 
   const deadlineHtml = task.deadline ? (() => {
     const d = new Date(task.deadline + "T00:00:00");
@@ -268,6 +275,56 @@ function createTaskCard(task) {
   card.querySelector(`[data-toggle]`).addEventListener("click", () => toggleTask(task.id));
   card.querySelector(`[data-del]`).addEventListener("click", () => deleteTask(task.id));
   return card;
+}
+
+// ── Drag-and-drop reordering ─────────────────────────────
+taskGrid.addEventListener("dragover", (e) => {
+  const dragging = taskGrid.querySelector(".dragging");
+  if (!dragging) return;
+  e.preventDefault();
+  const after = getDragAfterElement(taskGrid, e.clientY);
+  if (after == null) taskGrid.appendChild(dragging);
+  else taskGrid.insertBefore(dragging, after);
+});
+
+function getDragAfterElement(container, y) {
+  const cards = [...container.querySelectorAll(".task-card:not(.dragging)")];
+  return cards.reduce((closest, card) => {
+    const box = card.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset, element: card };
+    return closest;
+  }, { offset: -Infinity, element: null }).element;
+}
+
+function commitReorder() {
+  const visibleIds = [...taskGrid.querySelectorAll(".task-card")].map(c => c.dataset.id);
+  if (visibleIds.length < 2) return;
+
+  const globalOrder = [...allTasks]
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+    .map(t => t.id);
+
+  let insertAt = 0;
+  for (const id of globalOrder) {
+    if (visibleIds.includes(id)) break;
+    insertAt++;
+  }
+  const withoutVisible = globalOrder.filter(id => !visibleIds.includes(id));
+  const merged = [
+    ...withoutVisible.slice(0, insertAt),
+    ...visibleIds,
+    ...withoutVisible.slice(insertAt),
+  ];
+
+  merged.forEach((id, idx) => {
+    const task = allTasks.find(t => t.id === id);
+    if (task && task.order !== idx) {
+      task.order = idx;
+      apiFetch(`/api/tasks/${id}`, { method: "PATCH", body: JSON.stringify({ order: idx }) })
+        .catch(() => {});
+    }
+  });
 }
 
 function priorityLabel(p) {
