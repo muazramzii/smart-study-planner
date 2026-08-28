@@ -5,7 +5,11 @@ const path = require("path");
 
 const app = express();
 const PORT = 3000;
-const DATA_FILE = path.join(__dirname, "data.json");
+// Lives in its own folder (not inside server/) so a Railway Volume can be
+// mounted on just this directory without also hiding index.js — mounting a
+// volume replaces the folder's contents, so it can't share a folder with code.
+const DATA_DIR = path.join(__dirname, "../data");
+const DATA_FILE = path.join(DATA_DIR, "data.json");
 
 // ── Middleware ──────────────────────────────────────────────
 app.use(cors());
@@ -14,6 +18,7 @@ app.use(express.static(path.join(__dirname, "../public")));
 
 // ── Helpers ─────────────────────────────────────────────────
 function readData() {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(DATA_FILE)) {
     const initial = { subjects: [], tasks: [] };
     fs.writeFileSync(DATA_FILE, JSON.stringify(initial, null, 2));
