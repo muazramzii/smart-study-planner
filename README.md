@@ -66,7 +66,7 @@ smart-study-planner/
 ### Comfort & personalization
 
 - **Light / dark theme** — Toggle manually with the 🌙/☀️ button in the sidebar; your choice is remembered via `localStorage`. First-time visitors get their OS's light/dark preference automatically, before ever touching the toggle.
-- **Persistent storage** — Everything is saved to `data/data.json`, so your subjects and tasks survive server restarts without needing a real database — appropriate for a personal or small-scale study tool. In production, mount a persistent volume at `data/` or every fresh deploy resets it (see Ideas to Extend).
+- **Persistent storage** — Everything is saved to `data/data.json`, so your subjects and tasks survive server restarts without needing a real database — appropriate for a personal or small-scale study tool. The live demo runs this on a Railway Volume mounted at `/app/data`, so its data survives redeploys too.
 
 <p align="center">
   <img src="screenshots/light-mode.png" alt="Smart Study Planner — light mode" width="100%" />
@@ -139,7 +139,6 @@ http://localhost:3000
 - Add a calendar / weekly view
 - Export tasks to PDF
 - Add study session timer (Pomodoro)
-- Set up persistent storage (e.g. a Railway Volume) so `data.json` survives redeploys on the live demo
 
 ---
 
