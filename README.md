@@ -25,8 +25,11 @@ Smart Study Planner centralizes all of that — subjects, tasks, deadlines, and 
 ```
 smart-study-planner/
 ├── server/
-│   ├── index.js        ← Express API server
-│   └── data.json       ← Auto-created on first run (JSON storage)
+│   └── index.js        ← Express API server
+├── data/
+│   └── data.json       ← Auto-created on first run (JSON storage) — kept in its
+│                          own folder so a persistent volume can be mounted here
+│                          in production without hiding server/index.js
 ├── public/
 │   ├── index.html      ← Single-page app
 │   ├── css/
@@ -63,7 +66,7 @@ smart-study-planner/
 ### Comfort & personalization
 
 - **Light / dark theme** — Toggle manually with the 🌙/☀️ button in the sidebar; your choice is remembered via `localStorage`. First-time visitors get their OS's light/dark preference automatically, before ever touching the toggle.
-- **Persistent storage** — Everything is saved to `server/data.json`, so your subjects and tasks survive server restarts without needing a real database — appropriate for a personal or small-scale study tool.
+- **Persistent storage** — Everything is saved to `data/data.json`, so your subjects and tasks survive server restarts without needing a real database — appropriate for a personal or small-scale study tool. In production, mount a persistent volume at `data/` or every fresh deploy resets it (see Ideas to Extend).
 
 <p align="center">
   <img src="screenshots/light-mode.png" alt="Smart Study Planner — light mode" width="100%" />
@@ -124,7 +127,7 @@ http://localhost:3000
 
 - **Backend**: Node.js, Express
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES2020+)
-- **Storage**: JSON file (`server/data.json`)
+- **Storage**: JSON file (`data/data.json`)
 - **Fonts**: Plus Jakarta Sans (headings) + Inter (body) via Google Fonts
 
 ---
